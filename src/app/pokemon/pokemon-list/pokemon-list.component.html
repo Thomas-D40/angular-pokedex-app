@@ -1,0 +1,77 @@
+<div class="container mb-5">
+  <div class="row">
+    <div class="col-4 offset-4">
+      <div class="card">
+        <div class="card-body">
+          <div class="form-group">
+            <label for="search" class="form-label">Rechercher un pokémon</label>
+            <input
+              type="text"
+              class="form-control"
+              id="search"
+              placeholder="Nom du pokémon"
+              #searchField
+              [value]="searchTerm()"
+              (input)="setSearchTerm(searchField.value)"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row">
+    @for(pokemon of filteredPokemonList(); track pokemon.id) {
+    <div class="col-md-4">
+      <div class="card mb-3" appPokemonBorder [pokemonType]="pokemon.types[0]">
+        <div class="row g-0">
+          <div class="col-md-4 bg-light">
+            <img
+              class="img-fluid rounded-start"
+              [src]="pokemon.picture"
+              [alt]="pokemon.name"
+            />
+          </div>
+          <div class="col-md-8">
+            <div class="card-body">
+              <h5 class="card-title">{{ pokemon.name }}</h5>
+              <h6 class="card-subtitle mb-2 text-body-secondary">
+                Taille : {{ size(pokemon) }}
+              </h6>
+              <p class="card-text">Points de vie : {{ pokemon.life }}</p>
+              <p>
+                Date de création: {{ pokemon.created | date : "dd/MM/yyyy " }}
+              </p>
+              <div class="btn-group btn-group-sm" role="group">
+                <button
+                  (click)="incrementLife(pokemon)"
+                  class="btn btn-outline-secondary"
+                  [disabled]="pokemon.life >= 30"
+                >
+                  +
+                </button>
+                <button
+                  (click)="decrementLife(pokemon)"
+                  class="btn btn-outline-secondary"
+                  [disabled]="pokemon.life <= 10"
+                >
+                  -
+                </button>
+              </div>
+              <p class="class-card">
+                <a
+                  class="text small text-muted"
+                  [routerLink]="['/pokemons', pokemon.id]"
+                  >VOIR</a
+                >
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>
