@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { Pokemon } from '../../models/pokemon.model';
 import { PokemonBorderDirective } from '../../pokemon-border.directive';
@@ -9,11 +10,13 @@ import { PokemonService } from '../../services/pokemon.service';
   selector: 'app-pokemon-list',
   imports: [PokemonBorderDirective, DatePipe, RouterLink],
   templateUrl: './pokemon-list.component.html',
-  styles: ``,
+  styles: '.pokemon-card { cursor: pointer;}',
 })
 export class PokemonListComponent {
   readonly #pokemonservice = inject(PokemonService);
-  pokemonList = signal(this.#pokemonservice.getPokemonList());
+  pokemonList = toSignal(this.#pokemonservice.getPokemonList(), {
+    initialValue: [],
+  });
   readonly searchTerm = signal('');
 
   filteredPokemonList = computed(() => {
@@ -23,6 +26,8 @@ export class PokemonListComponent {
       pokemon.name.toLowerCase().includes(searchTerm)
     );
   });
+
+  readonly loading = computed(() => this.pokemonList().length === 0);
 
   setSearchTerm(value: string) {
     this.searchTerm.set(value);
@@ -37,13 +42,5 @@ export class PokemonListComponent {
     }
 
     return 'Moyen';
-  }
-
-  incrementLife(pokemon: Pokemon) {
-    pokemon.life = pokemon.life + 1;
-  }
-
-  decrementLife(pokemon: Pokemon) {
-    pokemon.life = pokemon.life - 1;
   }
 }

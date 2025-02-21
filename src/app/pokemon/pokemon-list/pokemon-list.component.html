@@ -23,9 +23,20 @@
 
 <div class="container">
   <div class="row">
-    @for(pokemon of filteredPokemonList(); track pokemon.id) {
+    @if(loading()) {
+    <div class="d-flex justify-content-center">
+      <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    } @for(pokemon of filteredPokemonList(); track pokemon.id) {
     <div class="col-md-4">
-      <div class="card mb-3" appPokemonBorder [pokemonType]="pokemon.types[0]">
+      <div
+        class="card mb-3 pokemon-card"
+        appPokemonBorder
+        [pokemonType]="pokemon.types[0]"
+        [routerLink]="['/pokemons', pokemon.id]"
+      >
         <div class="row g-0">
           <div class="col-md-4 bg-light">
             <img
@@ -40,33 +51,11 @@
               <h6 class="card-subtitle mb-2 text-body-secondary">
                 Taille : {{ size(pokemon) }}
               </h6>
-              <p class="card-text">Points de vie : {{ pokemon.life }}</p>
               <p>
                 Date de création: {{ pokemon.created | date : "dd/MM/yyyy " }}
               </p>
-              <div class="btn-group btn-group-sm" role="group">
-                <button
-                  (click)="incrementLife(pokemon)"
-                  class="btn btn-outline-secondary"
-                  [disabled]="pokemon.life >= 30"
-                >
-                  +
-                </button>
-                <button
-                  (click)="decrementLife(pokemon)"
-                  class="btn btn-outline-secondary"
-                  [disabled]="pokemon.life <= 10"
-                >
-                  -
-                </button>
-              </div>
-              <p class="class-card">
-                <a
-                  class="text small text-muted"
-                  [routerLink]="['/pokemons', pokemon.id]"
-                  >VOIR</a
-                >
-              </p>
+              <p class="card-text">Points de vie : {{ pokemon.life }}</p>
+              <p class="card-text">Dégats : {{ pokemon.damage }}</p>
             </div>
           </div>
         </div>

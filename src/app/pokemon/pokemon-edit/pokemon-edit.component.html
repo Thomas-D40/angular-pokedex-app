@@ -1,19 +1,20 @@
 <div class="container mt-5">
+  @if(pokemon(); as pokemon) {
   <div class="card">
     <div class="row g-0">
       <div
         class="col-md-4 d-flex align-items-center justify-content-center bg-light"
       >
         <img
-          [src]="pokemon().picture"
+          [src]="pokemon.picture"
           class="img-fluid rounded-start"
-          [alt]="pokemon().name"
+          [alt]="pokemon.name"
         />
       </div>
       <div class="col-md-8">
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="card-body">
-            <h2 class="card-title">{{ pokemon().name }}</h2>
+            <h2 class="card-title">{{ pokemon.name }}</h2>
             <table class="table">
               <tbody>
                 <tr>
@@ -24,22 +25,57 @@
                       class="form-control"
                       placeholder="Nom du Pokémon"
                       formControlName="name"
+                      [class.is-invalid]="pokemonName.invalid"
                     />
+                    @if(pokemonName.hasError('required')) {
+                    <div class="invalid-feedback">
+                      Veuillez saisir ce champ.
+                    </div>
+                    } @if(pokemonName.hasError('minlength')) {
+                    <div class="invalid-feedback">
+                      Veuillez saisir un nom plus long. Minimum:
+                      {{ pokemonName.getError("minlength").requiredLength }}
+                      caractères.
+                    </div>
+                    } @if(pokemonName.hasError('maxlength')) {
+                    <div class="invalid-feedback">
+                      Veuillez saisir un nom plus court. Maximum:
+                      {{ pokemonName.getError("maxlength").requiredLength }}
+                      caractères.
+                    </div>
+                    } @if(pokemonName.hasError('pattern')) {
+                    <div class="invalid-feedback">
+                      Veuillez n'utiliser que des lettres sans espaces ni
+                      chiffres.
+                    </div>
+                    }
+                    <!-- <div>{{ pokemonName.errors | json }}</div> -->
                   </td>
                 </tr>
                 <tr>
                   <th scope="row">Points de vie</th>
                   <td>
                     <div class="input-group">
-                      <button class="btn btn-outline-secondary" disabled>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        (click)="decrementLife()"
+                        [disabled]="pokemonLife.value <= POKEMON_RULES.MIN_LIFE"
+                      >
                         -
                       </button>
                       <input
-                        type="number"
+                        type="text"
                         class="form-control text-center"
                         formControlName="life"
+                        readonly
                       />
-                      <button class="btn btn-outline-secondary" disabled>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        (click)="incrementLife()"
+                        [disabled]="pokemonLife.value >= POKEMON_RULES.MAX_LIFE"
+                      >
                         +
                       </button>
                     </div>
@@ -49,22 +85,39 @@
                   <th scope="row">Dégâts</th>
                   <td>
                     <div class="input-group">
-                      <button class="btn btn-outline-secondary" disabled>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        (click)="decrementDamage()"
+                        [disabled]="
+                          pokemonDamage.value <= POKEMON_RULES.MIN_DAMAGE
+                        "
+                      >
                         -
                       </button>
                       <input
-                        type="number"
+                        type="text"
                         class="form-control text-center"
                         formControlName="damage"
+                        readonly
                       />
-                      <button class="btn btn-outline-secondary" disabled>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary"
+                        (click)="incrementDamage()"
+                        [disabled]="
+                          pokemonDamage.value >= POKEMON_RULES.MAX_DAMAGE
+                        "
+                      >
                         +
                       </button>
                     </div>
                   </td>
                 </tr>
                 <tr>
-                  <th scope="row">Types</th>
+                  <th scope="row" [class.is-invalid]="pokemonTypeList.invalid">
+                    Types
+                  </th>
                   <td>
                     @for(type of pokemonTypeList.controls; track type; let index
                     = $index) {
@@ -76,6 +129,13 @@
                     >
                       {{ type.value }} <span class="badge">X</span>
                     </button>
+                    } @if(pokemonTypeList.hasError('required')) {
+                    <div class="text-danger">Au moins un type est requis.</div>
+                    } @if(pokemonTypeList.hasError('maxlength')) {
+                    <div class="text-danger">
+                      {{ pokemonTypeList.getError("maxlength").requiredLength }}
+                      types maximum.
+                    </div>
                     }
                     <div class="row mt-3">
                       @for(type of pokemonService.getPokemonTypeList(); track
@@ -107,11 +167,16 @@
             <div class="d-flex justify-content-between mt-4">
               <button
                 class="btn btn-link text-decoration-none text-warning"
-                [routerLink]="['/pokemons', pokemon().id]"
+                [routerLink]="['/pokemons', pokemon.id]"
               >
                 RETOUR
               </button>
-              <button class="btn btn-link text-decoration-none text-warning">
+              <button
+                class="btn btn-link text-decoration-none text-warning"
+                [class.text-secondary]="form.invalid"
+                [class.text-warning]="form.valid"
+                [disabled]="form.invalid"
+              >
                 SAUVEGARDER LES CHANGEMENTS
               </button>
             </div>
@@ -120,5 +185,30 @@
       </div>
     </div>
   </div>
-  <!-- <pre>{{ form.value | json }}</pre> -->
+  } @if(loading()) {
+  <div class="d-flex justify-content-center">
+    <div class="spinner-border text-success" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+  } @if(error()) {
+  <div class="container text-center mt-5">
+    <div class="card">
+      <div class="card-body">
+        <img
+          src="http://assets.pokemon.com/assets/cms2/img/pokedex/full/035.png"
+          class="img-fluid mx-auto d-block"
+          alt="Rondoudou"
+        />
+        <h2 class="mt-4">Hey, ce Pokémon n'existe pas !</h2>
+        <a
+          routerLink="/pokemons"
+          class="btn btn-link mt-3 text-decoration-none"
+        >
+          RETOURNER À L'ACCUEIL</a
+        >
+      </div>
+    </div>
+  </div>
+  }
 </div>
